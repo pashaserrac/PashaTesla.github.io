@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100 select-none">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Tesla Theater Hub - Model 3 Edition</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            tesla: {
+              bg: '#0a0c10',
+              card: '#12151e',
+              border: 'rgba(255, 255, 255, 0.08)',
+              accent: '#3b82f6',
+              red: '#e50914',
+              cyan: '#00a8e1'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.25); }
+    
+    /* Background using user's Tesla Model 3 image with fallbacks */
+    .tesla-bg-wallpaper {
+      background-color: #08090d;
+      background-image: 
+        linear-gradient(rgba(8, 10, 15, 0.50), rgba(8, 10, 15, 0.72)),
+        url('2022_tesla_model-3_sedan_performance_fq_oem_1_1280x855.avif'),
+        url('background.jpg'),
+        url('background.avif'),
+        url('background.png');
+      background-size: cover;
+      background-position: center 60%;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+    }
+
+    .glass-dock {
+      background: rgba(14, 17, 24, 0.82);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+    }
+
+    .glass-card {
+      background: rgba(16, 20, 29, 0.78);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      -webkit-tap-highlight-color: transparent;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      text-decoration: none;
+    }
+    .glass-card:active {
+      transform: scale(0.96);
+      background: rgba(26, 32, 46, 0.90);
+    }
+    .glass-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255, 255, 255, 0.20);
+      box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.6), 0 0 20px rgba(59, 130, 246, 0.15);
+    }
+  </style>
+</head>
+<body class="h-full flex flex-col overflow-hidden text-slate-100 font-sans antialiased relative tesla-bg-wallpaper">
+
+  <!-- ================= TOP HEADER STATUS BAR ================= -->
+  <header id="main-header" class="h-16 px-6 flex items-center justify-between glass-dock border-b border-white/5 z-20 shrink-0">
+    <div class="flex items-center space-x-4">
+      <div class="flex items-center space-x-2.5">
+        <!-- Tesla T Logo SVG -->
+        <svg class="w-6 h-6 text-white fill-current" viewBox="0 0 24 24">
+          <path d="M12 4.5c2.4 0 4.6.6 6.5 1.7l1.5-2.2C17.5 2.5 14.9 1.8 12 1.8S6.5 2.5 4 4l1.5 2.2c1.9-1.1 4.1-1.7 6.5-1.7zm0 2.2c-1.5 0-2.8.3-4 .8l-.7-1c1.4-.6 3-.9 4.7-.9s3.3.3 4.7.9l-.7 1c-1.2-.5-2.5-.8-4-.8zm4.3 2.1L12 21.5 7.7 8.8c1.3.4 2.8.6 4.3.6s3-.2 4.3-.6z"/>
+        </svg>
+        <span class="font-bold tracking-wider text-base lg:text-lg text-white">TESLA THEATER HUB</span>
+      </div>
+      <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+        PARKED
+      </span>
+    </div>
+
+    <!-- Live Date and Clock -->
+    <div class="hidden sm:flex items-center space-x-3 text-slate-300 font-medium">
+      <span id="live-date" class="text-sm text-slate-400">Loading date...</span>
+      <span class="text-slate-600">•</span>
+      <span id="live-clock" class="text-base font-semibold text-white tracking-wide">12:00:00 PM</span>
+    </div>
+
+    <!-- Controls: Fullscreen / Fit-to-screen & Add App -->
+    <div class="flex items-center space-x-3">
+      <button onclick="toggleFullscreen()" class="flex items-center space-x-2 px-3.5 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 text-xs font-medium border border-white/10 transition active:scale-95">
+        <svg id="icon-fullscreen" class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
+        </svg>
+        <span id="text-fullscreen">Fit to Screen</span>
+      </button>
+
+      <button onclick="openAddAppModal()" class="flex items-center space-x-2 px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-lg shadow-blue-600/30 transition active:scale-95">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        <span>Add App</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ================= MAIN VIEWPORT CONTENT ================= -->
+  <main id="main-dashboard" class="flex-1 overflow-y-auto px-6 py-5 flex flex-col xl:flex-row gap-6">
+    
+    <!-- LEFT SECTION: CURATED STREAMING APPS GRID -->
+    <section class="flex-1 flex flex-col min-w-0">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h1 class="text-xl font-bold text-white tracking-tight">Entertainment Apps</h1>
+          <p class="text-xs text-slate-300">Tap any card to open directly in the Tesla browser window (target="_self", no new tabs)</p>
+        </div>
+        <div class="flex items-center space-x-2">
+          <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 flex items-center space-x-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span>Direct Browser Playback (No Errors)</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- App Tiles Grid (Clean, Sleek, Direct Navigation) -->
+      <div id="apps-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+        <!-- Rendered via JavaScript -->
+      </div>
+
+      <!-- RETURN TO DASHBOARD HINT -->
+      <div class="mt-4 p-3.5 rounded-2xl glass-dock flex items-center justify-between text-xs text-slate-300">
+        <div class="flex items-center space-x-2.5">
+          <span class="text-amber-400 text-base">↩️</span>
+          <span><strong>Return to Dashboard:</strong> When watching videos on Netflix, Disney+, Paramount+, etc., tap the Tesla browser <strong class="text-white">&larr; Back arrow</strong> at the top-left of your car's screen to return to this dashboard at any time.</span>
+        </div>
+        <span class="hidden sm:inline-block px-2.5 py-1 rounded-lg bg-white/10 text-slate-200 text-[11px] font-medium">Bookmark Saved</span>
+      </div>
+    </section>
+
+    <!-- RIGHT SECTION: EMBEDDED YOUTUBE THEATER & WEATHER -->
+    <aside class="w-full xl:w-[470px] flex flex-col gap-4 shrink-0">
+      
+      <!-- ================= OFFICIAL YOUTUBE EMBED PLAYER ================= -->
+      <!-- Incorporates: <iframe src="https://www.youtube.com/embed/VIDEO_ID" allowfullscreen></iframe> -->
+      <div class="glass-dock rounded-2xl p-4 flex flex-col relative overflow-hidden">
+        <div class="flex items-center justify-between mb-2.5">
+          <div class="flex items-center space-x-2">
+            <svg class="w-5 h-5 text-red-500 fill-current" viewBox="0 0 24 24">
+              <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+            </svg>
+            <h2 class="text-sm font-bold text-white">YouTube In-Browser Embed</h2>
+          </div>
+          <span class="text-[11px] px-2 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-500/30 font-semibold">
+            allowfullscreen
+          </span>
+        </div>
+
+        <!-- Video Input / Link Paste -->
+        <div class="flex items-center space-x-2 mb-2.5">
+          <input id="yt-embed-input" type="text" placeholder="Paste YouTube link or VIDEO_ID..."
+                 class="flex-1 px-3 py-1.5 rounded-xl bg-black/60 border border-white/10 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-red-500 text-xs">
+          <button onclick="handleLoadYouTubeEmbed()" class="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-semibold text-xs active:scale-95 transition shrink-0">
+            Play
+          </button>
+        </div>
+
+        <!-- Quick Video Presets -->
+        <div class="flex items-center space-x-1.5 mb-3 overflow-x-auto text-[11px] pb-1">
+          <span class="text-slate-400 shrink-0">Presets:</span>
+          <button onclick="loadVideoId('jfKfPfyJRdk')" class="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-slate-200 shrink-0">☕ Lofi Beats</button>
+          <button onclick="loadVideoId('21X5lGlDOfg')" class="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-slate-200 shrink-0">🚀 NASA Live</button>
+          <button onclick="loadVideoId('LXb3EKWsInQ')" class="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-slate-200 shrink-0">🌿 4K Nature</button>
+          <button onclick="loadVideoId('fJ9rUzIMcZQ')" class="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-slate-200 shrink-0">🎵 Music</button>
+        </div>
+
+        <!-- EMBEDDED IFRAME PLAYER -->
+        <div class="w-full aspect-video rounded-xl overflow-hidden bg-black border border-white/10 shadow-2xl">
+          <iframe id="yt-main-iframe" 
+                  src="https://www.youtube.com/embed/jfKfPfyJRdk" 
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                  allowfullscreen 
+                  class="w-full h-full border-0">
+          </iframe>
+        </div>
+      </div>
+
+      <!-- WEATHER WIDGET -->
+      <div class="glass-dock rounded-2xl p-4 flex flex-col relative overflow-hidden">
+        <div class="flex items-center justify-between mb-2">
+          <div>
+            <h2 id="weather-city" class="text-sm font-semibold text-slate-200">Phoenix, Arizona</h2>
+            <p id="weather-summary" class="text-xs text-slate-400">Clear Skies • Real-time</p>
+          </div>
+          <button onclick="refreshWeather(true)" title="Refresh Weather" class="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="flex items-center justify-between my-1">
+          <div class="flex items-baseline space-x-2">
+            <span id="weather-temp" class="text-4xl font-extrabold text-amber-400">92°</span>
+            <span class="text-xs text-slate-400 font-medium">Fahrenheit</span>
+          </div>
+          <div id="weather-icon" class="text-3xl">☀️</div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-white/10 text-xs">
+          <div class="flex justify-between p-1.5 rounded-lg bg-black/40">
+            <span class="text-slate-400">High / Low:</span>
+            <span id="weather-hilo" class="font-semibold text-slate-200">98° / 74°</span>
+          </div>
+          <div class="flex justify-between p-1.5 rounded-lg bg-black/40">
+            <span class="text-slate-400">Humidity:</span>
+            <span id="weather-humidity" class="font-semibold text-slate-200">18%</span>
+          </div>
+          <div class="flex justify-between p-1.5 rounded-lg bg-black/40">
+            <span class="text-slate-400">Wind:</span>
+            <span id="weather-wind" class="font-semibold text-slate-200">7 mph NW</span>
+          </div>
+          <div class="flex justify-between p-1.5 rounded-lg bg-black/40">
+            <span class="text-slate-400">UV Index:</span>
+            <span id="weather-uv" class="font-semibold text-slate-200">7 High</span>
+          </div>
+        </div>
+      </div>
+
+    </aside>
+  </main>
+
+  <!-- ================= BOTTOM STATUS DOCK ================= -->
+  <footer id="main-footer" class="h-12 px-6 glass-dock border-t border-white/5 flex items-center justify-between text-xs text-slate-400 shrink-0 z-20">
+    <div class="flex items-center space-x-4">
+      <span class="flex items-center space-x-1.5 text-slate-300">
+        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+        <span>White Model 3 Theme Active</span>
+      </span>
+      <span>•</span>
+      <span id="custom-app-count">Custom Apps: 0</span>
+    </div>
+
+    <div class="flex items-center space-x-4">
+      <button onclick="resetDefaultApps()" class="hover:text-slate-200 transition">Reset Apps to Default</button>
+      <span>•</span>
+      <button onclick="toggleFullscreen()" class="text-cyan-400 hover:text-cyan-300 font-semibold">Toggle Fullscreen</button>
+    </div>
+  </footer>
+
+  <!-- ================= MODAL: ADD CUSTOM APP ================= -->
+  <div id="modal-add-app" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+    <div class="glass-dock rounded-3xl w-full max-w-md p-6 shadow-2xl relative border border-white/10">
+      <div class="flex items-center justify-between mb-4 border-b border-white/10 pb-3">
+        <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+          <span>➕</span>
+          <span>Add Custom App</span>
+        </h3>
+        <button onclick="closeAddAppModal()" class="text-slate-400 hover:text-white text-xl leading-none">&times;</button>
+      </div>
+
+      <form id="form-add-app" onsubmit="handleSaveCustomApp(event)" class="space-y-4 text-xs">
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">Website URL</label>
+          <input id="input-app-url" type="text" placeholder="e.g. crunchyroll.com, pluto.tv, tubitv.com" required
+                 oninput="handleUrlInput(this.value)"
+                 class="w-full px-3 py-2 rounded-xl bg-black/70 border border-white/10 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 text-sm">
+          <p class="text-[11px] text-slate-400 mt-1">Official logo and title will be detected automatically as you type!</p>
+        </div>
+
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">App Name</label>
+          <input id="input-app-name" type="text" placeholder="Auto-fills from URL or type custom name" required
+                 class="w-full px-3 py-2 rounded-xl bg-black/70 border border-white/10 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 text-sm">
+        </div>
+
+        <!-- AUTO-DETECTED LOGO PREVIEW -->
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">Detected Official Logo Preview</label>
+          <div class="flex items-center space-x-3 p-3 rounded-2xl bg-black/50 border border-white/5">
+            <div id="preview-logo-box" class="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center overflow-hidden border border-white/10 shrink-0">
+              <span id="preview-placeholder" class="text-xs text-slate-500">Logo</span>
+              <img id="preview-logo-img" src="" alt="" class="w-10 h-10 object-contain hidden"
+                   onerror="this.classList.add('hidden'); document.getElementById('preview-placeholder').classList.remove('hidden');">
+            </div>
+            <div class="text-xs">
+              <div id="preview-title" class="font-bold text-white">Enter a site URL above</div>
+              <div id="preview-domain" class="text-slate-400 text-[11px]">Auto-fetches high-res icon from domain</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end space-x-3 pt-3 border-t border-white/10">
+          <button type="button" onclick="closeAddAppModal()" class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-slate-300 font-medium">Cancel</button>
+          <button type="submit" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold shadow-md shadow-blue-600/30">Add to Dashboard</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= JAVASCRIPT CONTROLLERS ================= -->
+  <script>
+    // CLEANER, HIGHER-QUALITY DEFAULT APPS (Removed Hulu & HBO Max, Added Apple TV+, Plex, Peacock)
+    const DEFAULT_APPS = [
+      {
+        id: 'youtube',
+        name: 'YouTube',
+        url: 'https://www.youtube.com',
+        isYouTube: true,
+        color: '#FF0000',
+        badge: 'Embed Player & Web',
+        svg: `<svg viewBox="0 0 24 24" class="w-12 h-12" fill="#FF0000">
+                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+              </svg>`
+      },
+      {
+        id: 'netflix',
+        name: 'Netflix',
+        url: 'https://www.netflix.com',
+        color: '#E50914',
+        badge: 'Movies & Series',
+        svg: `<svg viewBox="0 0 24 24" class="w-8 h-12">
+                <path fill="#B1060F" d="M4 0h4.5v24H4z"/>
+                <path fill="#B1060F" d="M15.5 0H20v24h-4.5z"/>
+                <path fill="#E50914" d="M4.5 0h4.5L19.5 24h-4.5z"/>
+              </svg>`
+      },
+      {
+        id: 'disney',
+        name: 'Disney+',
+        url: 'https://www.disneyplus.com',
+        color: '#113C8E',
+        badge: 'Disney • Pixar • Marvel',
+        svg: `<svg viewBox="0 0 120 60" class="w-20 h-10">
+                <path d="M 10 40 Q 60 -10 110 35" fill="none" stroke="#60a5fa" stroke-width="4" stroke-linecap="round"/>
+                <text x="12" y="44" fill="#ffffff" font-size="28" font-family="sans-serif" font-weight="900" letter-spacing="1">Disney</text>
+                <text x="96" y="38" fill="#38bdf8" font-size="36" font-family="sans-serif" font-weight="bold">+</text>
+              </svg>`
+      },
+      {
+        id: 'prime',
+        name: 'Prime Video',
+        url: 'https://www.primevideo.com',
+        color: '#00A8E1',
+        badge: 'Amazon Originals',
+        svg: `<svg viewBox="0 0 120 50" class="w-20 h-10">
+                <text x="5" y="24" fill="#ffffff" font-size="22" font-family="sans-serif" font-weight="bold">prime</text>
+                <text x="65" y="24" fill="#00a8e1" font-size="18" font-family="sans-serif" font-weight="600">video</text>
+                <path d="M 8 34 Q 45 46 80 32" fill="none" stroke="#00a8e1" stroke-width="4" stroke-linecap="round"/>
+                <polygon points="76,28 85,32 78,38" fill="#00a8e1"/>
+              </svg>`
+      },
+      {
+        id: 'paramount',
+        name: 'Paramount+',
+        url: 'https://www.paramountplus.com',
+        color: '#0064FF',
+        badge: 'Movies, Live CBS & Shows',
+        svg: `<svg viewBox="0 0 120 55" class="w-20 h-10">
+                <defs>
+                  <linearGradient id="pGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#0064FF"/>
+                    <stop offset="100%" stop-color="#002D80"/>
+                  </linearGradient>
+                </defs>
+                <polygon points="60,18 42,42 78,42" fill="#0064FF" opacity="0.4"/>
+                <polygon points="60,20 48,42 72,42" fill="#0064FF"/>
+                <polyline points="57,28 60,30 63,27 60,20" fill="#ffffff" opacity="0.9"/>
+                <circle cx="28.1" cy="29.1" r="1.5" fill="#ffffff"/>
+                <circle cx="31.1" cy="24.4" r="1.5" fill="#ffffff"/>
+                <circle cx="35.3" cy="20.2" r="1.5" fill="#ffffff"/>
+                <circle cx="40.5" cy="16.7" r="1.5" fill="#ffffff"/>
+                <circle cx="46.5" cy="14.1" r="1.5" fill="#ffffff"/>
+                <circle cx="53.1" cy="12.5" r="1.5" fill="#ffffff"/>
+                <circle cx="60.0" cy="12.0" r="1.5" fill="#ffffff"/>
+                <circle cx="66.9" cy="12.5" r="1.5" fill="#ffffff"/>
+                <circle cx="73.5" cy="14.1" r="1.5" fill="#ffffff"/>
+                <circle cx="79.5" cy="16.7" r="1.5" fill="#ffffff"/>
+                <circle cx="84.7" cy="20.2" r="1.5" fill="#ffffff"/>
+                <circle cx="88.9" cy="24.4" r="1.5" fill="#ffffff"/>
+                <circle cx="91.9" cy="29.1" r="1.5" fill="#ffffff"/>
+                <text x="60" y="48" fill="#ffffff" font-size="11" font-family="sans-serif" font-weight="900" text-anchor="middle" letter-spacing="0.5">Paramount<tspan fill="#38bdf8" font-size="13" font-weight="bold">+</tspan></text>
+              </svg>`
+      },
+      {
+        id: 'appletv',
+        name: 'Apple TV+',
+        url: 'https://tv.apple.com',
+        color: '#FFFFFF',
+        badge: 'Apple Originals & Movies',
+        svg: `<svg viewBox="0 0 100 45" class="w-16 h-8">
+                <!-- Apple logo + tv+ -->
+                <path fill="#ffffff" d="M18 20c0-3.3 2.7-5.1 2.8-5.2-1.5-2.2-3.9-2.5-4.7-2.6-2-.2-3.9 1.2-4.9 1.2-1 0-2.6-1.2-4.2-1.1-2.2 0-4.2 1.3-5.3 3.3-2.3 4-0.6 9.9 1.6 13.1 1.1 1.6 2.4 3.3 4.1 3.2 1.6-.1 2.3-1 4.2-1 2 0 2.5 1 4.2 1 1.8 0 2.9-1.6 4-3.2 1.3-1.8 1.8-3.6 1.8-3.7-0.1 0-3.6-1.4-3.7-5zM15 10c0.9-1.1 1.5-2.7 1.3-4.3-1.4 0.1-3 0.9-3.9 2-0.8 1-1.5 2.6-1.3 4.1 1.5 0.1 3-0.8 3.9-1.8z"/>
+                <text x="32" y="27" fill="#ffffff" font-size="20" font-family="sans-serif" font-weight="bold">tv<tspan fill="#38bdf8" font-size="22">+</tspan></text>
+              </svg>`
+      },
+      {
+        id: 'plex',
+        name: 'Plex',
+        url: 'https://app.plex.tv',
+        color: '#E5A00D',
+        badge: 'Personal Media & Movies',
+        svg: `<svg viewBox="0 0 100 45" class="w-16 h-8">
+                <polygon points="15,8 30,22.5 15,37" fill="#e5a00d"/>
+                <text x="36" y="29" fill="#ffffff" font-size="22" font-family="sans-serif" font-weight="900" letter-spacing="1">PLEX</text>
+              </svg>`
+      },
+      {
+        id: 'peacock',
+        name: 'Peacock',
+        url: 'https://www.peacocktv.com',
+        color: '#000000',
+        badge: 'Universal Movies & Sports',
+        svg: `<svg viewBox="0 0 100 45" class="w-16 h-8">
+                <!-- Peacock dots -->
+                <circle cx="12" cy="18" r="3.5" fill="#facc15"/>
+                <circle cx="20" cy="14" r="3.5" fill="#f97316"/>
+                <circle cx="28" cy="16" r="3.5" fill="#ec4899"/>
+                <circle cx="34" cy="23" r="3.5" fill="#8b5cf6"/>
+                <circle cx="26" cy="27" r="3.5" fill="#3b82f6"/>
+                <circle cx="18" cy="26" r="3.5" fill="#10b981"/>
+                <text x="44" y="27" fill="#ffffff" font-size="16" font-family="sans-serif" font-weight="bold">peacock</text>
+              </svg>`
+      }
+    ];
+
+    // EXTRACT YOUTUBE ID
+    function extractYouTubeVideoId(val) {
+      if (!val) return 'jfKfPfyJRdk';
+      val = val.trim();
+      const match = val.match(/(?:v=|\/embed\/|\/live\/|\/shorts\/|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+      if (match && match[1]) return match[1];
+      if (val.length === 11 && /^[a-zA-Z0-9_-]{11}$/.test(val)) return val;
+      return 'jfKfPfyJRdk';
+    }
+
+    function loadVideoId(videoId) {
+      const cleanId = extractYouTubeVideoId(videoId);
+      const iframe = document.getElementById('yt-main-iframe');
+      // Incorporates the exact requested syntax:
+      // <iframe src="https://www.youtube.com/embed/VIDEO_ID" allowfullscreen></iframe>
+      iframe.src = `https://www.youtube.com/embed/${cleanId}?autoplay=1`;
+    }
+
+    function handleLoadYouTubeEmbed() {
+      const input = document.getElementById('yt-embed-input');
+      if (input && input.value) {
+        loadVideoId(input.value);
+      }
+    }
+
+    // DOMAIN & AUTO-LOGO HELPERS
+    function extractDomain(url) {
+      try {
+        let clean = url.trim().toLowerCase();
+        if (!clean.startsWith('http://') && !clean.startsWith('https://')) {
+          clean = 'https://' + clean;
+        }
+        const parsed = new URL(clean);
+        return parsed.hostname.replace(/^www\./, '');
+      } catch (e) {
+        return url.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0];
+      }
+    }
+
+    function getLogoUrl(domain) {
+      return `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
+    }
+
+    function handleUrlInput(val) {
+      if (!val || val.length < 3) return;
+      const domain = extractDomain(val);
+      const nameInput = document.getElementById('input-app-name');
+      const previewImg = document.getElementById('preview-logo-img');
+      const previewPlaceholder = document.getElementById('preview-placeholder');
+      const previewTitle = document.getElementById('preview-title');
+      const previewDomain = document.getElementById('preview-domain');
+
+      const baseName = domain.split('.')[0];
+      const capitalizedName = baseName.charAt(0).toUpperCase() + baseName.slice(1);
+      if (!nameInput.value || nameInput.dataset.autoFilled === 'true') {
+        nameInput.value = capitalizedName;
+        nameInput.dataset.autoFilled = 'true';
+      }
+
+      const logoUrl = getLogoUrl(domain);
+      previewImg.src = logoUrl;
+      previewImg.classList.remove('hidden');
+      previewPlaceholder.classList.add('hidden');
+      previewTitle.textContent = nameInput.value || capitalizedName;
+      previewDomain.textContent = domain;
+    }
+
+    // LOCAL STORAGE FOR CUSTOM APPS
+    function getStoredCustomApps() {
+      try {
+        const stored = localStorage.getItem('tesla_dashboard_custom_apps');
+        return stored ? JSON.parse(stored) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveCustomApps(apps) {
+      localStorage.setItem('tesla_dashboard_custom_apps', JSON.stringify(apps));
+      renderApps();
+    }
+
+    // RENDER APPS (DIRECT BROWSER LINKS: target="_self")
+    function renderApps() {
+      const container = document.getElementById('apps-container');
+      const customApps = getStoredCustomApps();
+      document.getElementById('custom-app-count').textContent = `Custom Apps: ${customApps.length}`;
+      
+      const allApps = [...DEFAULT_APPS, ...customApps];
+      container.innerHTML = '';
+
+      allApps.forEach(app => {
+        // Built strictly with target="_self" so it opens directly in the Tesla browser window
+        const card = document.createElement('a');
+        card.href = app.url;
+        card.target = "_self";
+        card.className = `glass-card relative group rounded-2xl p-4 flex flex-col justify-between min-h-[165px]`;
+
+        if (app.isYouTube) {
+          card.onclick = (e) => {
+            const embedInput = document.getElementById('yt-embed-input');
+            if (embedInput) embedInput.focus();
+          };
+        }
+
+        const deleteButton = app.isCustom ? `
+          <button onclick="event.preventDefault(); event.stopPropagation(); deleteCustomApp('${app.id}')" title="Remove App"
+                  class="absolute top-2 right-2 p-1.5 rounded-lg bg-red-900/60 hover:bg-red-700 text-red-300 opacity-80 group-hover:opacity-100 transition z-10">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+          </button>
+        ` : '';
+
+        let logoContent = app.svg;
+        if (!logoContent && app.logoUrl) {
+          logoContent = `
+            <img src="${app.logoUrl}" alt="${app.name}" 
+                 class="w-12 h-12 rounded-xl object-contain shadow-md"
+                 onerror="this.onerror=null; this.src='https://www.google.com/s2/favicons?domain=${extractDomain(app.url)}&sz=128';">
+          `;
+        } else if (!logoContent) {
+          logoContent = `
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-md bg-blue-600">
+              ${app.name.substring(0, 2).toUpperCase()}
+            </div>
+          `;
+        }
+
+        card.innerHTML = `
+          ${deleteButton}
+          <div class="w-10 h-1 rounded-full mb-3" style="background-color: ${app.color || '#3b82f6'}"></div>
+          
+          <div class="flex-1 flex items-center justify-center py-2">
+            ${logoContent}
+          </div>
+
+          <div class="mt-2 text-center">
+            <div class="font-bold text-white text-sm tracking-tight truncate">${app.name}</div>
+            <div class="text-[11px] text-slate-400 truncate mt-0.5">${app.badge || extractDomain(app.url)}</div>
+          </div>
+
+          <div class="mt-3 pt-2 border-t border-white/10 flex items-center justify-between text-[11px] text-slate-400">
+            <span class="group-hover:text-slate-200">Open in Browser</span>
+            <span class="text-blue-400 font-semibold group-hover:translate-x-0.5 transition">&rarr;</span>
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+
+      // ADD CUSTOM APP BUTTON CARD
+      const addCard = document.createElement('div');
+      addCard.className = `glass-card rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer border-2 border-dashed border-white/20 bg-slate-900/30 hover:bg-slate-800/50 hover:border-blue-500/60 transition min-h-[165px] text-slate-400 hover:text-white`;
+      addCard.onclick = openAddAppModal;
+      addCard.innerHTML = `
+        <div class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-2xl text-slate-200 mb-2">+</div>
+        <div class="font-bold text-sm text-slate-200">Add App</div>
+        <div class="text-[11px] text-slate-400 mt-1">Auto-Detects Logo</div>
+      `;
+      container.appendChild(addCard);
+    }
+
+    // ADD APP MODAL
+    function openAddAppModal() {
+      document.getElementById('modal-add-app').classList.remove('hidden');
+      document.getElementById('input-app-url').focus();
+    }
+
+    function closeAddAppModal() {
+      document.getElementById('modal-add-app').classList.add('hidden');
+      document.getElementById('form-add-app').reset();
+      document.getElementById('preview-logo-img').classList.add('hidden');
+      document.getElementById('preview-placeholder').classList.remove('hidden');
+      document.getElementById('preview-title').textContent = 'Enter a site URL above';
+      document.getElementById('preview-domain').textContent = 'Auto-fetches high-res icon from domain';
+      delete document.getElementById('input-app-name').dataset.autoFilled;
+    }
+
+    function handleSaveCustomApp(e) {
+      e.preventDefault();
+      let url = document.getElementById('input-app-url').value.trim();
+      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        url = 'https://' + url;
+      }
+      const domain = extractDomain(url);
+      const name = document.getElementById('input-app-name').value.trim() || domain;
+      const logoUrl = getLogoUrl(domain);
+
+      const newApp = {
+        id: 'custom_' + Date.now(),
+        name: name,
+        url: url,
+        logoUrl: logoUrl,
+        badge: domain,
+        color: '#3b82f6',
+        isCustom: true
+      };
+
+      const customApps = getStoredCustomApps();
+      customApps.push(newApp);
+      saveCustomApps(customApps);
+      closeAddAppModal();
+    }
+
+    function deleteCustomApp(id) {
+      if (confirm('Remove this custom app from your dashboard?')) {
+        let customApps = getStoredCustomApps();
+        customApps = customApps.filter(a => a.id !== id);
+        saveCustomApps(customApps);
+      }
+    }
+
+    function resetDefaultApps() {
+      if (confirm('Reset custom apps back to defaults?')) {
+        localStorage.removeItem('tesla_dashboard_custom_apps');
+        renderApps();
+      }
+    }
+
+    // FULLSCREEN / FIT-TO-SCREEN TOGGLE
+    function toggleFullscreen() {
+      const text = document.getElementById('text-fullscreen');
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().then(() => {
+          if (text) text.textContent = "Exit Fullscreen";
+        }).catch(err => console.warn(err));
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen().then(() => {
+            if (text) text.textContent = "Fit to Screen";
+          });
+        }
+      }
+    }
+
+    // LIVE DATE & CLOCK
+    function updateClock() {
+      const now = new Date();
+      const optionsDate = { weekday: 'short', month: 'short', day: 'numeric' };
+      const dateEl = document.getElementById('live-date');
+      const clockEl = document.getElementById('live-clock');
+
+      if (dateEl) dateEl.textContent = now.toLocaleDateString(undefined, optionsDate);
+      if (clockEl) clockEl.textContent = now.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', second: '2-digit' });
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // LIVE WEATHER (Phoenix, AZ Default + Geolocation)
+    async function refreshWeather(forceUserLocation = false) {
+      let lat = 33.4484;
+      let lon = -112.0740;
+      let cityLabel = "Phoenix, Arizona";
+
+      if (forceUserLocation && navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((pos) => {
+          lat = pos.coords.latitude;
+          lon = pos.coords.longitude;
+          cityLabel = "Current Location";
+          fetchWeatherData(lat, lon, cityLabel);
+        }, () => fetchWeatherData(lat, lon, cityLabel));
+      } else {
+        fetchWeatherData(lat, lon, cityLabel);
+      }
+    }
+
+    async function fetchWeatherData(lat, lon, cityLabel) {
+      try {
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,uv_index_max&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("Status " + res.status);
+        const data = await res.json();
+
+        const current = data.current;
+        const daily = data.daily;
+        
+        document.getElementById('weather-city').textContent = cityLabel;
+        document.getElementById('weather-temp').textContent = Math.round(current.temperature_2m) + '°';
+        document.getElementById('weather-humidity').textContent = current.relative_humidity_2m + '%';
+        document.getElementById('weather-wind').textContent = Math.round(current.wind_speed_10m) + ' mph';
+
+        if (daily && daily.temperature_2m_max && daily.temperature_2m_max[0]) {
+          const hi = Math.round(daily.temperature_2m_max[0]);
+          const lo = Math.round(daily.temperature_2m_min[0]);
+          document.getElementById('weather-hilo').textContent = `${hi}° / ${lo}°`;
+        }
+
+        if (daily && daily.uv_index_max && daily.uv_index_max[0]) {
+          document.getElementById('weather-uv').textContent = Math.round(daily.uv_index_max[0]) + ' (Peak)';
+        }
+
+        const code = current.weather_code;
+        let icon = "☀️";
+        let summary = "Clear Skies";
+        if (code >= 1 && code <= 3) { icon = "⛅"; summary = "Partly Cloudy"; }
+        else if (code >= 45 && code <= 48) { icon = "🌫️"; summary = "Foggy"; }
+        else if (code >= 51 && code <= 67) { icon = "🌧️"; summary = "Light Rain / Drizzle"; }
+        else if (code >= 71 && code <= 77) { icon = "❄️"; summary = "Snow"; }
+        else if (code >= 80 && code <= 82) { icon = "🌦️"; summary = "Rain Showers"; }
+        else if (code >= 95) { icon = "⛈️"; summary = "Thunderstorm"; }
+
+        document.getElementById('weather-icon').textContent = icon;
+        document.getElementById('weather-summary').textContent = summary + ' • Updated';
+      } catch (err) {
+        console.warn("Weather offline fallback:", err);
+      }
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      renderApps();
+      refreshWeather();
+    });
+  </script>
+</body>
+</html>
