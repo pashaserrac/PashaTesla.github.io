@@ -31,11 +31,11 @@
     ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 4px; }
     ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.25); }
     
-    /* Background using user's Tesla Model 3 image with fallbacks */
+    /* Background using user's Tesla Model 3 image with graceful fallbacks */
     .tesla-bg-wallpaper {
       background-color: #08090d;
       background-image: 
-        linear-gradient(rgba(8, 10, 15, 0.50), rgba(8, 10, 15, 0.72)),
+        linear-gradient(rgba(8, 10, 15, 0.52), rgba(8, 10, 15, 0.72)),
         url('2022_tesla_model-3_sedan_performance_fq_oem_1_1280x855.avif'),
         url('background.jpg'),
         url('background.avif'),
@@ -73,6 +73,11 @@
       transform: translateY(-2px);
       border-color: rgba(255, 255, 255, 0.20);
       box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.6), 0 0 20px rgba(59, 130, 246, 0.15);
+    }
+
+    /* Adjustable Floating Player Window Transitions */
+    #adjustable-youtube-modal {
+      transition: width 0.25s ease, height 0.25s ease, transform 0.25s ease;
     }
   </style>
 </head>
@@ -126,26 +131,26 @@
       <div class="flex items-center justify-between mb-4">
         <div>
           <h1 class="text-xl font-bold text-white tracking-tight">Entertainment Apps</h1>
-          <p class="text-xs text-slate-300">Tap any card to open directly in the Tesla browser window (target="_self", no new tabs)</p>
+          <p class="text-xs text-slate-300">Tap YouTube for adjustable in-dashboard video, or tap any streaming service to launch</p>
         </div>
         <div class="flex items-center space-x-2">
           <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 flex items-center space-x-1.5">
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span>Direct Browser Playback (No Errors)</span>
+            <span>Direct Browser & Adjustable Embed</span>
           </span>
         </div>
       </div>
 
-      <!-- App Tiles Grid (Clean, Sleek, Direct Navigation) -->
+      <!-- App Tiles Grid (Clean, Sleek) -->
       <div id="apps-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
         <!-- Rendered via JavaScript -->
       </div>
 
-      <!-- RETURN TO DASHBOARD HINT -->
+      <!-- RETURN TO DASHBOARD HELPER -->
       <div class="mt-4 p-3.5 rounded-2xl glass-dock flex items-center justify-between text-xs text-slate-300">
         <div class="flex items-center space-x-2.5">
           <span class="text-amber-400 text-base">↩️</span>
-          <span><strong>Return to Dashboard:</strong> When watching videos on Netflix, Disney+, Paramount+, etc., tap the Tesla browser <strong class="text-white">&larr; Back arrow</strong> at the top-left of your car's screen to return to this dashboard at any time.</span>
+          <span><strong>Return to Dashboard:</strong> When watching on Netflix, Disney+, Prime Video, Paramount+, etc., tap the Tesla browser <strong class="text-white">&larr; Back arrow</strong> in the top-left corner of the touchscreen to return instantly to your dashboard.</span>
         </div>
         <span class="hidden sm:inline-block px-2.5 py-1 rounded-lg bg-white/10 text-slate-200 text-[11px] font-medium">Bookmark Saved</span>
       </div>
@@ -154,47 +159,31 @@
     <!-- RIGHT SECTION: EMBEDDED YOUTUBE THEATER & WEATHER -->
     <aside class="w-full xl:w-[470px] flex flex-col gap-4 shrink-0">
       
-      <!-- ================= OFFICIAL YOUTUBE EMBED PLAYER ================= -->
-      <!-- Incorporates: <iframe src="https://www.youtube.com/embed/VIDEO_ID" allowfullscreen></iframe> -->
+      <!-- ================= COMPACT YOUTUBE QUICK LAUNCHER ================= -->
       <div class="glass-dock rounded-2xl p-4 flex flex-col relative overflow-hidden">
         <div class="flex items-center justify-between mb-2.5">
           <div class="flex items-center space-x-2">
             <svg class="w-5 h-5 text-red-500 fill-current" viewBox="0 0 24 24">
               <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
             </svg>
-            <h2 class="text-sm font-bold text-white">YouTube In-Browser Embed</h2>
+            <h2 class="text-sm font-bold text-white">Adjustable YouTube Player</h2>
           </div>
-          <span class="text-[11px] px-2 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-500/30 font-semibold">
-            allowfullscreen
-          </span>
-        </div>
-
-        <!-- Video Input / Link Paste -->
-        <div class="flex items-center space-x-2 mb-2.5">
-          <input id="yt-embed-input" type="text" placeholder="Paste YouTube link or VIDEO_ID..."
-                 class="flex-1 px-3 py-1.5 rounded-xl bg-black/60 border border-white/10 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-red-500 text-xs">
-          <button onclick="handleLoadYouTubeEmbed()" class="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-semibold text-xs active:scale-95 transition shrink-0">
-            Play
+          <button onclick="openAdjustableYouTube('jfKfPfyJRdk')" class="text-[11px] px-2.5 py-1 rounded-lg bg-red-600 hover:bg-red-500 text-white font-semibold flex items-center space-x-1">
+            <span>⛶ Open Pop-up</span>
           </button>
         </div>
 
-        <!-- Quick Video Presets -->
-        <div class="flex items-center space-x-1.5 mb-3 overflow-x-auto text-[11px] pb-1">
-          <span class="text-slate-400 shrink-0">Presets:</span>
-          <button onclick="loadVideoId('jfKfPfyJRdk')" class="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-slate-200 shrink-0">☕ Lofi Beats</button>
-          <button onclick="loadVideoId('21X5lGlDOfg')" class="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-slate-200 shrink-0">🚀 NASA Live</button>
-          <button onclick="loadVideoId('LXb3EKWsInQ')" class="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-slate-200 shrink-0">🌿 4K Nature</button>
-          <button onclick="loadVideoId('fJ9rUzIMcZQ')" class="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-slate-200 shrink-0">🎵 Music</button>
-        </div>
+        <p class="text-[11px] text-slate-300 mb-2.5">
+          Watch directly inside the dashboard with resizable window controls (Compact, Standard, Theater, Fullscreen) and in-dashboard video search.
+        </p>
 
-        <!-- EMBEDDED IFRAME PLAYER -->
-        <div class="w-full aspect-video rounded-xl overflow-hidden bg-black border border-white/10 shadow-2xl">
-          <iframe id="yt-main-iframe" 
-                  src="https://www.youtube.com/embed/jfKfPfyJRdk" 
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                  allowfullscreen 
-                  class="w-full h-full border-0">
-          </iframe>
+        <!-- Quick Video Presets -->
+        <div class="flex items-center space-x-1.5 overflow-x-auto text-[11px] pb-1">
+          <span class="text-slate-400 shrink-0">Presets:</span>
+          <button onclick="openAdjustableYouTube('jfKfPfyJRdk', 'Lofi Beats')" class="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-slate-200 shrink-0">☕ Lofi Beats</button>
+          <button onclick="openAdjustableYouTube('21X5lGlDOfg', 'NASA Live Space')" class="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-slate-200 shrink-0">🚀 NASA Live</button>
+          <button onclick="openAdjustableYouTube('LXb3EKWsInQ', 'Costa Rica 4K')" class="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-slate-200 shrink-0">🌿 4K Nature</button>
+          <button onclick="openAdjustableYouTube('fJ9rUzIMcZQ', 'Queen 4K')" class="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-slate-200 shrink-0">🎵 Music</button>
         </div>
       </div>
 
@@ -242,6 +231,70 @@
 
     </aside>
   </main>
+
+  <!-- ================= ADJUSTABLE FLOATING YOUTUBE WINDOW ================= -->
+  <!-- Opens right on top of the dashboard, resizable with preset size buttons -->
+  <div id="adjustable-youtube-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 flex items-center justify-center p-4 hidden">
+    <div id="adjustable-youtube-modal" class="glass-dock rounded-3xl w-full max-w-4xl h-[75vh] flex flex-col shadow-2xl relative border border-white/15 overflow-hidden">
+      
+      <!-- Window Title & Controls Bar -->
+      <div class="h-12 px-5 flex items-center justify-between bg-slate-900/90 border-b border-white/10 shrink-0">
+        <!-- Back to Dashboard -->
+        <button onclick="closeAdjustableYouTube()" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs transition active:scale-95 shadow">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+          </svg>
+          <span>Back to Dashboard</span>
+        </button>
+
+        <!-- Current Video Title -->
+        <div class="flex items-center space-x-2 text-xs truncate max-w-xs sm:max-w-md">
+          <span class="text-red-500 font-bold">▶ YouTube:</span>
+          <span id="yt-modal-title" class="text-slate-200 font-medium truncate">Lofi Hip Hop Radio</span>
+        </div>
+
+        <!-- Window Size Adjusters (Compact, Standard, Theater, Fullscreen) -->
+        <div class="flex items-center space-x-1.5">
+          <span class="text-[11px] text-slate-400 mr-1 hidden sm:inline">Size:</span>
+          <button onclick="setPlayerSize('compact')" title="Compact View" class="px-2 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 text-xs font-medium">Small</button>
+          <button onclick="setPlayerSize('standard')" title="Standard View" class="px-2 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 text-xs font-medium">Medium</button>
+          <button onclick="setPlayerSize('theater')" title="Theater View" class="px-2 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 text-xs font-medium">Large</button>
+          <button onclick="toggleFullscreen()" title="Fit Screen" class="px-2 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-cyan-400 text-xs font-medium">⛶</button>
+          <button onclick="closeAdjustableYouTube()" class="p-1 rounded-lg bg-white/10 hover:bg-red-900/60 text-slate-400 hover:text-red-300 transition ml-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- In-Window Search & Video Input Bar -->
+      <div class="px-4 py-2 bg-black/60 border-b border-white/5 flex items-center justify-between gap-3 shrink-0 text-xs">
+        <div class="flex items-center space-x-2 flex-1">
+          <input id="yt-modal-search" type="text" placeholder="Search videos or paste YouTube link / ID..."
+                 class="w-full px-3 py-1.5 rounded-xl bg-slate-900 border border-white/10 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-red-500 text-xs">
+          <button onclick="handleModalSearch()" class="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-semibold shrink-0">Search</button>
+        </div>
+        <div class="hidden md:flex items-center space-x-1.5 text-[11px] text-slate-400 shrink-0">
+          <button onclick="loadModalVideo('jfKfPfyJRdk', 'Lofi Beats')" class="hover:text-white">Lofi</button>
+          <span>•</span>
+          <button onclick="loadModalVideo('21X5lGlDOfg', 'NASA Live')" class="hover:text-white">NASA</button>
+          <span>•</span>
+          <button onclick="loadModalVideo('LXb3EKWsInQ', '4K Nature')" class="hover:text-white">4K Nature</button>
+        </div>
+      </div>
+
+      <!-- The Official Embed Frame: <iframe src="https://www.youtube.com/embed/VIDEO_ID" allowfullscreen></iframe> -->
+      <div class="flex-1 w-full h-full bg-black relative">
+        <iframe id="yt-modal-iframe" 
+                src="https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=1" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                allowfullscreen 
+                class="w-full h-full border-0">
+        </iframe>
+      </div>
+    </div>
+  </div>
 
   <!-- ================= BOTTOM STATUS DOCK ================= -->
   <footer id="main-footer" class="h-12 px-6 glass-dock border-t border-white/5 flex items-center justify-between text-xs text-slate-400 shrink-0 z-20">
@@ -313,15 +366,15 @@
 
   <!-- ================= JAVASCRIPT CONTROLLERS ================= -->
   <script>
-    // CLEANER, HIGHER-QUALITY DEFAULT APPS (Removed Hulu & HBO Max, Added Apple TV+, Plex, Peacock)
+    // CURATED STREAMING APPS
     const DEFAULT_APPS = [
       {
         id: 'youtube',
         name: 'YouTube',
-        url: 'https://www.youtube.com',
+        url: '#',
         isYouTube: true,
         color: '#FF0000',
-        badge: 'Embed Player & Web',
+        badge: 'Adjustable In-Page',
         svg: `<svg viewBox="0 0 24 24" class="w-12 h-12" fill="#FF0000">
                 <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
               </svg>`
@@ -402,7 +455,6 @@
         color: '#FFFFFF',
         badge: 'Apple Originals & Movies',
         svg: `<svg viewBox="0 0 100 45" class="w-16 h-8">
-                <!-- Apple logo + tv+ -->
                 <path fill="#ffffff" d="M18 20c0-3.3 2.7-5.1 2.8-5.2-1.5-2.2-3.9-2.5-4.7-2.6-2-.2-3.9 1.2-4.9 1.2-1 0-2.6-1.2-4.2-1.1-2.2 0-4.2 1.3-5.3 3.3-2.3 4-0.6 9.9 1.6 13.1 1.1 1.6 2.4 3.3 4.1 3.2 1.6-.1 2.3-1 4.2-1 2 0 2.5 1 4.2 1 1.8 0 2.9-1.6 4-3.2 1.3-1.8 1.8-3.6 1.8-3.7-0.1 0-3.6-1.4-3.7-5zM15 10c0.9-1.1 1.5-2.7 1.3-4.3-1.4 0.1-3 0.9-3.9 2-0.8 1-1.5 2.6-1.3 4.1 1.5 0.1 3-0.8 3.9-1.8z"/>
                 <text x="32" y="27" fill="#ffffff" font-size="20" font-family="sans-serif" font-weight="bold">tv<tspan fill="#38bdf8" font-size="22">+</tspan></text>
               </svg>`
@@ -425,7 +477,6 @@
         color: '#000000',
         badge: 'Universal Movies & Sports',
         svg: `<svg viewBox="0 0 100 45" class="w-16 h-8">
-                <!-- Peacock dots -->
                 <circle cx="12" cy="18" r="3.5" fill="#facc15"/>
                 <circle cx="20" cy="14" r="3.5" fill="#f97316"/>
                 <circle cx="28" cy="16" r="3.5" fill="#ec4899"/>
@@ -444,22 +495,66 @@
       const match = val.match(/(?:v=|\/embed\/|\/live\/|\/shorts\/|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
       if (match && match[1]) return match[1];
       if (val.length === 11 && /^[a-zA-Z0-9_-]{11}$/.test(val)) return val;
-      return 'jfKfPfyJRdk';
+      return val;
     }
 
-    function loadVideoId(videoId) {
+    // ADJUSTABLE YOUTUBE WINDOW CONTROLLER
+    function openAdjustableYouTube(videoId = 'jfKfPfyJRdk', title = '') {
+      const overlay = document.getElementById('adjustable-youtube-overlay');
+      const iframe = document.getElementById('yt-modal-iframe');
+      const titleEl = document.getElementById('yt-modal-title');
       const cleanId = extractYouTubeVideoId(videoId);
-      const iframe = document.getElementById('yt-main-iframe');
-      // Incorporates the exact requested syntax:
-      // <iframe src="https://www.youtube.com/embed/VIDEO_ID" allowfullscreen></iframe>
+
+      overlay.classList.remove('hidden');
       iframe.src = `https://www.youtube.com/embed/${cleanId}?autoplay=1`;
+      if (title) titleEl.textContent = title;
+      else titleEl.textContent = `Video ID: ${cleanId}`;
     }
 
-    function handleLoadYouTubeEmbed() {
-      const input = document.getElementById('yt-embed-input');
-      if (input && input.value) {
-        loadVideoId(input.value);
+    function closeAdjustableYouTube() {
+      const overlay = document.getElementById('adjustable-youtube-overlay');
+      const iframe = document.getElementById('yt-modal-iframe');
+      // Stop video audio
+      iframe.src = "";
+      overlay.classList.add('hidden');
+    }
+
+    function setPlayerSize(size) {
+      const modal = document.getElementById('adjustable-youtube-modal');
+      modal.className = "glass-dock rounded-3xl flex flex-col shadow-2xl relative border border-white/15 overflow-hidden transition-all duration-300";
+      
+      if (size === 'compact') {
+        modal.classList.add('w-[500px]', 'h-[360px]');
+      } else if (size === 'standard') {
+        modal.classList.add('w-full', 'max-w-4xl', 'h-[75vh]');
+      } else if (size === 'theater') {
+        modal.classList.add('w-[96vw]', 'h-[90vh]');
       }
+    }
+
+    function handleModalSearch() {
+      const input = document.getElementById('yt-modal-search');
+      const q = input.value.trim();
+      const iframe = document.getElementById('yt-modal-iframe');
+      const titleEl = document.getElementById('yt-modal-title');
+      if (!q) return;
+
+      const videoId = extractYouTubeVideoId(q);
+      if (videoId && videoId.length === 11) {
+        iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+        titleEl.textContent = `Playing: ${videoId}`;
+      } else {
+        // Embed search mode
+        iframe.src = `https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(q)}&autoplay=1`;
+        titleEl.textContent = `Search: ${q}`;
+      }
+    }
+
+    function loadModalVideo(id, title) {
+      const iframe = document.getElementById('yt-modal-iframe');
+      const titleEl = document.getElementById('yt-modal-title');
+      iframe.src = `https://www.youtube.com/embed/${id}?autoplay=1`;
+      if (title) titleEl.textContent = title;
     }
 
     // DOMAIN & AUTO-LOGO HELPERS
@@ -519,7 +614,7 @@
       renderApps();
     }
 
-    // RENDER APPS (DIRECT BROWSER LINKS: target="_self")
+    // RENDER APPS
     function renderApps() {
       const container = document.getElementById('apps-container');
       const customApps = getStoredCustomApps();
@@ -533,12 +628,12 @@
         const card = document.createElement('a');
         card.href = app.url;
         card.target = "_self";
-        card.className = `glass-card relative group rounded-2xl p-4 flex flex-col justify-between min-h-[165px]`;
+        card.className = `glass-card relative group rounded-2xl p-4 flex flex-col justify-between min-h-[165px] cursor-pointer`;
 
         if (app.isYouTube) {
           card.onclick = (e) => {
-            const embedInput = document.getElementById('yt-embed-input');
-            if (embedInput) embedInput.focus();
+            e.preventDefault();
+            openAdjustableYouTube('jfKfPfyJRdk', 'Lofi Hip Hop Radio');
           };
         }
 
@@ -580,7 +675,7 @@
           </div>
 
           <div class="mt-3 pt-2 border-t border-white/10 flex items-center justify-between text-[11px] text-slate-400">
-            <span class="group-hover:text-slate-200">Open in Browser</span>
+            <span class="group-hover:text-slate-200">${app.isYouTube ? 'Play In Dashboard' : 'Open in Browser'}</span>
             <span class="text-blue-400 font-semibold group-hover:translate-x-0.5 transition">&rarr;</span>
           </div>
         `;
